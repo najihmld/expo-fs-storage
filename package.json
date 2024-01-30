@@ -1,5 +1,5 @@
 {
-  "name": "expo-fs-storage",
+  "name": "@najihmld/expo-fs-storage",
   "version": "1.0.0",
   "description": "An persistent, key-value storage system for React Native Expo, which does not have size limitations of @react-native-async-storage/async-storage",
   "main": "/src/index.ts",
@@ -15,7 +15,7 @@
     "storage"
   ],
   "author": "Najih Mld",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.10",
     "ts-node": "^10.9.2",
