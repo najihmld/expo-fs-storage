@@ -1,0 +1,27 @@
+{
+  "name": "expo-fs-storage",
+  "version": "1.0.0",
+  "description": "An persistent, key-value storage system for React Native Expo, which does not have size limitations of @react-native-async-storage/async-storage",
+  "main": "/src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts"
+  },
+  "keywords": [
+    "expo",
+    "react-native",
+    "async storage",
+    "asyncstorage",
+    "storage"
+  ],
+  "author": "Najih Mld",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.11.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "expo-file-system": "^15.9.0"
+  }
+}
