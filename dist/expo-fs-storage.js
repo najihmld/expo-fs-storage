@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -59,8 +36,51 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var FileSystem = __importStar(require("expo-file-system"));
-var DIRECTORY = FileSystem.documentDirectory + "databases";
+// Do not change this: existing apps have their data stored under this name.
+var DIRECTORY_NAME = "databases";
+function withTrailingSlash(uri) {
+    return uri.endsWith("/") ? uri : uri + "/";
+}
+// expo-file-system v19+ (SDK 54+): class based API (File, Paths).
+function createModernBackend(FS) {
+    var _this = this;
+    return {
+        baseUri: withTrailingSlash(FS.Paths.document.uri),
+        write: function (uri, value) { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                // Creates the file when missing and overwrites it otherwise.
+                new FS.File(uri).write(value);
+                return [2 /*return*/];
+            });
+        }); },
+        read: function (uri) { return new FS.File(uri).text(); },
+        remove: function (uri) { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                new FS.File(uri).delete();
+                return [2 /*return*/];
+            });
+        }); },
+    };
+}
+// expo-file-system up to SDK 53: functional API on the main entry point.
+function createLegacyBackend(FS) {
+    return {
+        baseUri: FS.documentDirectory,
+        write: function (uri, value) { return FS.writeAsStringAsync(uri, value); },
+        read: function (uri) { return FS.readAsStringAsync(uri); },
+        remove: function (uri) { return FS.deleteAsync(uri); },
+    };
+}
+// Both APIs resolve to the same app document directory, so files written with
+// one are readable with the other. The require stays a literal string so Metro
+// can resolve it.
+function createBackend() {
+    var FS = require("expo-file-system");
+    return FS.File && FS.Paths ? createModernBackend(FS) : createLegacyBackend(FS);
+}
+var backend = createBackend();
+// Files live directly in the document directory as "databases<key>".
+var getPath = function (key) { return backend.baseUri + DIRECTORY_NAME + key; };
 function createPromise(asyncOperation, callback) {
     var _this = this;
     return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
@@ -87,13 +107,13 @@ function createPromise(asyncOperation, callback) {
 }
 var ExpoFsStorage = {
     setItem: function (key, value, callback) {
-        return createPromise(function () { return FileSystem.writeAsStringAsync(DIRECTORY + key, value); }, callback);
+        return createPromise(function () { return backend.write(getPath(key), value); }, callback);
     },
     getItem: function (key, callback) {
-        return createPromise(function () { return FileSystem.readAsStringAsync(DIRECTORY + key); }, callback);
+        return createPromise(function () { return backend.read(getPath(key)); }, callback);
     },
     removeItem: function (key, callback) {
-        return createPromise(function () { return FileSystem.deleteAsync(DIRECTORY + key); }, callback);
+        return createPromise(function () { return backend.remove(getPath(key)); }, callback);
     },
 };
 exports.default = ExpoFsStorage;

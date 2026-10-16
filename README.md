@@ -22,6 +22,13 @@ With Expo CLI:
 npx expo install @najihmld/expo-fs-storage
 ```
 
+## Compatibility
+
+Works with every Expo SDK. On SDK 54+ it uses the new `expo-file-system` API
+(`File`, `Paths`); on older SDKs it uses the functional API. Both point to the
+same document directory and the same file names, so data written by older
+versions of this package (or older SDKs) stays readable after upgrading.
+
 ## Usage
 
 **ExpoFsStorage** can only store `string` data. In order to store object data,
